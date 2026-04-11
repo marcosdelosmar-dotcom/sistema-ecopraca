@@ -1,0 +1,551 @@
+import os
+import sqlite3
+from contextlib import closing
+from datetime import datetime
+from io import BytesIO
+
+import pandas as pd
+import streamlit as st
+
+DB_NAME = "associacao.db"
+
+st.set_page_config(
+    page_title="Associação Ecopraça",
+    page_icon="🏡",
+    layout="wide"
+)
+
+
+def aplicar_estilo():
+    st.markdown(
+        '''
+        <style>
+            .stApp {
+                background: linear-gradient(180deg, #f4fbf6 0%, #ffffff 100%);
+            }
+
+            .main .block-container {
+                padding-top: 1.2rem;
+                padding-bottom: 2rem;
+                max-width: 1150px;
+            }
+
+            .hero-box {
+                background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
+                border-radius: 22px;
+                padding: 28px 28px 22px 28px;
+                color: white;
+                box-shadow: 0 10px 28px rgba(25, 135, 84, 0.18);
+                margin-bottom: 18px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+                font-weight: 800;
+                margin-bottom: 6px;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+                opacity: 0.95;
+                margin-bottom: 0;
+            }
+
+            .mini-card {
+                background: white;
+                border: 1px solid #e9f2ec;
+                border-radius: 18px;
+                padding: 16px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+                text-align: center;
+            }
+
+            .mini-card .label {
+                color: #5a6b61;
+                font-size: 0.92rem;
+                margin-bottom: 8px;
+            }
+
+            .mini-card .value {
+                color: #0f5132;
+                font-size: 1.8rem;
+                font-weight: 800;
+                line-height: 1;
+            }
+
+            .card {
+                background: white;
+                border: 1px solid #e9f2ec;
+                border-radius: 18px;
+                padding: 18px 20px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+                margin-bottom: 14px;
+            }
+
+            div[data-testid="stTabs"] button[role="tab"] {
+                border-radius: 12px;
+                padding: 10px 16px;
+                margin-right: 8px;
+                border: 1px solid #dfeee4;
+                background: white;
+            }
+
+            div[data-testid="stTabs"] button[aria-selected="true"] {
+                background: #198754 !important;
+                color: white !important;
+                border-color: #198754 !important;
+            }
+
+            div[data-testid="stForm"] {
+                background: white;
+                border-radius: 18px;
+                padding: 14px 14px 6px 14px;
+                border: 1px solid #e9f2ec;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+            }
+
+            div.stButton > button, div.stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
+                border-radius: 12px !important;
+                font-weight: 700 !important;
+                border: none !important;
+                background: #198754 !important;
+                color: white !important;
+            }
+
+            div.stButton > button:hover, div.stDownloadButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+                background: #146c43 !important;
+            }
+
+            .section-title {
+                font-size: 1.15rem;
+                font-weight: 800;
+                color: #0f5132;
+                margin-bottom: 8px;
+            }
+
+            .section-text {
+                color: #617267;
+                margin-bottom: 0;
+            }
+        </style>
+        ''',
+        unsafe_allow_html=True
+    )
+
+
+def get_connection():
+    return sqlite3.connect(DB_NAME, check_same_thread=False)
+
+
+def init_db():
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS moradores (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                identidade TEXT,
+                cpf TEXT,
+                nis TEXT,
+                telefone TEXT,
+                email TEXT,
+                data_nascimento TEXT,
+                endereco TEXT,
+                numero TEXT,
+                complemento TEXT,
+                bairro TEXT,
+                cidade TEXT,
+                estado TEXT,
+                cep TEXT,
+                observacoes TEXT,
+                participa_outra_associacao TEXT,
+                status_associado TEXT DEFAULT 'Ativo',
+                data_cadastro TEXT NOT NULL
+            )
+            '''
+        )
+        conn.commit()
+
+
+def limpar_texto(valor: str) -> str:
+    return valor.strip() if valor else ""
+
+
+def formatar_cpf(cpf: str) -> str:
+    numeros = "".join(filter(str.isdigit, cpf or ""))
+    if len(numeros) == 11:
+        return f"{numeros[:3]}.{numeros[3:6]}.{numeros[6:9]}-{numeros[9:]}"
+    return cpf
+
+
+def formatar_telefone(telefone: str) -> str:
+    numeros = "".join(filter(str.isdigit, telefone or ""))
+    if len(numeros) == 11:
+        return f"({numeros[:2]}) {numeros[2:7]}-{numeros[7:]}"
+    if len(numeros) == 10:
+        return f"({numeros[:2]}) {numeros[2:6]}-{numeros[6:]}"
+    return telefone
+
+
+def validar_campos(nome: str, cpf: str):
+    erros = []
+    if not limpar_texto(nome):
+        erros.append("O nome é obrigatório.")
+
+    cpf_numeros = "".join(filter(str.isdigit, cpf or ""))
+    if cpf_numeros and len(cpf_numeros) != 11:
+        erros.append("CPF deve ter 11 dígitos.")
+    return erros
+
+
+def inserir_morador(dados: dict):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO moradores (
+                nome, identidade, cpf, nis, telefone, email, data_nascimento,
+                endereco, numero, complemento, bairro, cidade, estado, cep,
+                observacoes, participa_outra_associacao, status_associado, data_cadastro
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''',
+            (
+                dados["nome"],
+                dados["identidade"],
+                dados["cpf"],
+                dados["nis"],
+                dados["telefone"],
+                dados["email"],
+                dados["data_nascimento"],
+                dados["endereco"],
+                dados["numero"],
+                dados["complemento"],
+                dados["bairro"],
+                dados["cidade"],
+                dados["estado"],
+                dados["cep"],
+                dados["observacoes"],
+                dados["participa_outra_associacao"],
+                dados["status_associado"],
+                dados["data_cadastro"],
+            ),
+        )
+        conn.commit()
+
+
+def atualizar_morador(morador_id: int, dados: dict):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            UPDATE moradores SET
+                nome = ?, identidade = ?, cpf = ?, telefone = ?, email = ?, data_nascimento = ?,
+                endereco = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ?,
+                observacoes = ?, status_associado = ?
+            WHERE id = ?
+            ''',
+            (
+                dados["nome"],
+                dados["identidade"],
+                dados["cpf"],
+                dados["telefone"],
+                dados["email"],
+                dados["data_nascimento"],
+                dados["endereco"],
+                dados["numero"],
+                dados["complemento"],
+                dados["bairro"],
+                dados["cidade"],
+                dados["estado"],
+                dados["cep"],
+                dados["observacoes"],
+                dados["status_associado"],
+                morador_id,
+            ),
+        )
+        conn.commit()
+
+
+def excluir_morador(morador_id: int):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM moradores WHERE id = ?", (morador_id,))
+        conn.commit()
+
+
+def buscar_moradores(termo: str = "", status: str = "Todos") -> pd.DataFrame:
+    with closing(get_connection()) as conn:
+        query = "SELECT * FROM moradores WHERE 1=1"
+        params = []
+
+        if termo:
+            query += " AND (nome LIKE ? OR cpf LIKE ? OR identidade LIKE ? OR telefone LIKE ? OR endereco LIKE ?)"
+            termo_like = f"%{termo}%"
+            params.extend([termo_like, termo_like, termo_like, termo_like, termo_like])
+
+        if status != "Todos":
+            query += " AND status_associado = ?"
+            params.append(status)
+
+        query += " ORDER BY nome ASC"
+        return pd.read_sql_query(query, conn, params=params)
+
+
+def buscar_por_id(morador_id: int):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM moradores WHERE id = ?", (morador_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        colunas = [descricao[0] for descricao in cursor.description]
+        return dict(zip(colunas, row))
+
+
+def exportar_csv(df: pd.DataFrame) -> bytes:
+    output = BytesIO()
+    output.write(df.to_csv(index=False).encode("utf-8-sig"))
+    output.seek(0)
+    return output.getvalue()
+
+
+def gerar_relatorio_html(df: pd.DataFrame, titulo: str = "Relatório de Moradores") -> str:
+    total = len(df)
+    ativos = len(df[df["status_associado"] == "Ativo"]) if "status_associado" in df.columns else 0
+    inativos = len(df[df["status_associado"] == "Inativo"]) if "status_associado" in df.columns else 0
+
+    tabela_html = df.to_html(index=False, classes="tabela", border=0)
+
+    html = f'''
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>{titulo}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 30px; color: #222; }}
+            h1 {{ margin-bottom: 4px; }}
+            .info {{ margin-bottom: 20px; }}
+            .cards {{ display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }}
+            .card {{ border: 1px solid #ccc; border-radius: 8px; padding: 12px 16px; min-width: 180px; }}
+            .tabela {{ border-collapse: collapse; width: 100%; font-size: 12px; }}
+            .tabela th, .tabela td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            .tabela th {{ background: #f3f3f3; }}
+        </style>
+    </head>
+    <body>
+        <h1>{titulo}</h1>
+        <div class="info">
+            Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}
+        </div>
+        <div class="cards">
+            <div class="card"><strong>Total cadastrados</strong><br>{total}</div>
+            <div class="card"><strong>Ativos</strong><br>{ativos}</div>
+            <div class="card"><strong>Inativos</strong><br>{inativos}</div>
+        </div>
+        {tabela_html}
+    </body>
+    </html>
+    '''
+    return html
+
+
+# Interface
+init_db()
+aplicar_estilo()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+logo_path = os.path.join(BASE_DIR, "logo.jpeg")
+
+st.markdown('<div class="hero-box">', unsafe_allow_html=True)
+col_logo, col_texto = st.columns([1, 2])
+
+with col_logo:
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=230)
+
+with col_texto:
+    st.markdown('<div class="hero-title">Sistema de Cadastro - Associação Ecopraça</div>', unsafe_allow_html=True)
+    st.markdown('<p class="hero-subtitle">Cadastro, consulta, edição e relatórios simples dos associados.</p>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+df_geral = buscar_moradores()
+total = len(df_geral)
+ativos = len(df_geral[df_geral["status_associado"] == "Ativo"]) if not df_geral.empty else 0
+inativos = len(df_geral[df_geral["status_associado"] == "Inativo"]) if not df_geral.empty else 0
+
+m1, m2, m3 = st.columns(3)
+with m1:
+    st.markdown(f'<div class="mini-card"><div class="label">Total de cadastros</div><div class="value">{total}</div></div>', unsafe_allow_html=True)
+with m2:
+    st.markdown(f'<div class="mini-card"><div class="label">Associados ativos</div><div class="value">{ativos}</div></div>', unsafe_allow_html=True)
+with m3:
+    st.markdown(f'<div class="mini-card"><div class="label">Associados inativos</div><div class="value">{inativos}</div></div>', unsafe_allow_html=True)
+
+st.write("")
+aba1, aba2, aba3 = st.tabs(["Cadastrar / Editar", "Consultar", "Relatórios"])
+
+with aba1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Cadastro de morador</div><p class="section-text">Preencha os dados abaixo para cadastrar ou editar um associado.</p>', unsafe_allow_html=True)
+
+    editar_id = st.number_input(
+        "ID para edição (deixe 0 para novo cadastro)",
+        min_value=0,
+        step=1,
+        value=0,
+    )
+
+    dados_existentes = buscar_por_id(int(editar_id)) if editar_id else None
+
+    with st.form("form_morador"):
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            nome = st.text_input("Nome completo *", value=dados_existentes["nome"] if dados_existentes else "")
+            identidade = st.text_input("Identidade (RG)", value=dados_existentes["identidade"] if dados_existentes else "")
+            cpf = st.text_input("CPF", value=dados_existentes["cpf"] if dados_existentes else "")
+            nis = st.text_input("NIS")
+            outra_associacao = st.radio(
+                "Participa de outra associação?",
+                ["Não", "Sim"],
+                horizontal=True
+            )
+            data_nascimento = st.text_input(
+                "Data de nascimento",
+                value=dados_existentes["data_nascimento"] if dados_existentes else "",
+                placeholder="dd/mm/aaaa",
+            )
+
+        with col2:
+            telefone = st.text_input("Telefone", value=dados_existentes["telefone"] if dados_existentes else "")
+            email = st.text_input("E-mail", value=dados_existentes["email"] if dados_existentes else "")
+            status_associado = st.selectbox(
+                "Status",
+                ["Ativo", "Inativo"],
+                index=0 if not dados_existentes or dados_existentes["status_associado"] == "Ativo" else 1,
+            )
+
+        with col3:
+            endereco = st.text_input("Endereço", value=dados_existentes["endereco"] if dados_existentes else "")
+            numero = st.text_input("Número", value=dados_existentes["numero"] if dados_existentes else "")
+            complemento = st.text_input("Complemento", value=dados_existentes["complemento"] if dados_existentes else "")
+            bairro = st.text_input("Bairro", value=dados_existentes["bairro"] if dados_existentes else "")
+
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            cidade = st.text_input("Cidade", value=dados_existentes["cidade"] if dados_existentes else "")
+        with col5:
+            estado = st.text_input("Estado", value=dados_existentes["estado"] if dados_existentes else "")
+        with col6:
+            cep = st.text_input("CEP", value=dados_existentes["cep"] if dados_existentes else "")
+
+        observacoes = st.text_area("Observações", value=dados_existentes["observacoes"] if dados_existentes else "")
+
+        salvar = st.form_submit_button("Salvar cadastro")
+
+        if salvar:
+            erros = validar_campos(nome, cpf)
+            if erros:
+                for erro in erros:
+                    st.error(erro)
+            else:
+                dados = {
+                    "nome": limpar_texto(nome),
+                    "identidade": limpar_texto(identidade),
+                    "cpf": formatar_cpf(cpf),
+                    "telefone": formatar_telefone(telefone),
+                    "email": limpar_texto(email),
+                    "nis": limpar_texto(nis),  # NOVO CAMPO                 
+                                  
+                    "data_nascimento": limpar_texto(data_nascimento),
+                    "endereco": limpar_texto(endereco),
+                    "numero": limpar_texto(numero),
+                    "complemento": limpar_texto(complemento),
+                    "bairro": limpar_texto(bairro),
+                    "cidade": limpar_texto(cidade),
+                    "estado": limpar_texto(estado),
+                    "cep": limpar_texto(cep),
+                    "observacoes": limpar_texto(observacoes),
+                    "status_associado": status_associado,
+                    "participa_outra_associacao": outra_associacao, # NOVO CAMPO
+                    "data_cadastro": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                }
+
+                if dados_existentes:
+                    atualizar_morador(int(editar_id), dados)
+                    st.success(f"Cadastro ID {int(editar_id)} atualizado com sucesso.")
+                else:
+                    inserir_morador(dados)
+                    st.success("Novo morador cadastrado com sucesso.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Excluir cadastro</div><p class="section-text">Use essa opção com cuidado para remover um registro pelo ID.</p>', unsafe_allow_html=True)
+
+    excluir_id = st.number_input("ID para excluir", min_value=0, step=1, value=0, key="excluir_id")
+    if st.button("Excluir registro"):
+        if excluir_id > 0:
+            excluir_morador(int(excluir_id))
+            st.warning(f"Registro ID {int(excluir_id)} excluído.")
+        else:
+            st.info("Informe um ID válido para excluir.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with aba2:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Consulta de moradores</div><p class="section-text">Pesquise por nome, CPF, identidade, telefone ou endereço.</p>', unsafe_allow_html=True)
+
+    colf1, colf2 = st.columns([2, 1])
+    with colf1:
+        termo = st.text_input("Buscar por nome, CPF, RG, telefone ou endereço")
+    with colf2:
+        filtro_status = st.selectbox("Filtrar por status", ["Todos", "Ativo", "Inativo"])
+
+    df_consulta = buscar_moradores(termo=termo, status=filtro_status)
+
+    st.metric("Total encontrado", len(df_consulta))
+
+    if not df_consulta.empty:
+        st.dataframe(df_consulta, use_container_width=True, hide_index=True)
+        st.download_button(
+            label="Baixar consulta em CSV",
+            data=exportar_csv(df_consulta),
+            file_name="moradores_filtrados.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("Nenhum morador encontrado.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with aba3:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Relatórios</div><p class="section-text">Visualize os cadastros gerais e exporte os dados da associação.</p>', unsafe_allow_html=True)
+
+    df_relatorio = buscar_moradores()
+
+    if df_relatorio.empty:
+        st.info("Ainda não há cadastros para gerar relatório.")
+    else:
+        st.dataframe(df_relatorio, use_container_width=True, hide_index=True)
+        html_relatorio = gerar_relatorio_html(df_relatorio)
+
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button(
+                label="Baixar relatório em HTML",
+                data=html_relatorio.encode("utf-8"),
+                file_name="relatorio_moradores.html",
+                mime="text/html",
+            )
+            st.download_button(
+                label="Baixar relatório em CSV",
+                data=exportar_csv(df_relatorio),
+                file_name="relatorio_moradores.csv",
+                mime="text/csv",
+            )
+    st.markdown('</div>', unsafe_allow_html=True)
