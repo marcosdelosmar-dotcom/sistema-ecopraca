@@ -15,117 +15,172 @@ st.set_page_config(
     layout="wide"
 )
 
-
 def aplicar_estilo():
     st.markdown(
         '''
         <style>
             .stApp {
-                background: linear-gradient(180deg, #f4fbf6 0%, #ffffff 100%);
+                background: linear-gradient(180deg, #dff6e8 0%, #f8fffb 45%, #ffffff 100%);
             }
 
             .main .block-container {
-                padding-top: 1.2rem;
-                padding-bottom: 2rem;
-                max-width: 1150px;
-            }
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+    max-width: 980px;
+}
 
             .hero-box {
-                background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
-                border-radius: 22px;
-                padding: 28px 28px 22px 28px;
-                color: white;
-                box-shadow: 0 10px 28px rgba(25, 135, 84, 0.18);
-                margin-bottom: 18px;
-            }
+    background: linear-gradient(135deg, #0b3d2c 0%, #198754 100%);
+    border-radius: 20px;
+    padding: 20px 24px;
+    color: white;
+    box-shadow: 0 10px 24px rgba(25, 135, 84, 0.16);
+    margin-bottom: 16px;
+}
 
-            .hero-title {
-                font-size: 2rem;
-                font-weight: 800;
-                margin-bottom: 6px;
-            }
+.hero-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    line-height: 1.1;
+}
 
-            .hero-subtitle {
-                font-size: 1rem;
-                opacity: 0.95;
-                margin-bottom: 0;
-            }
-
+.hero-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.92;
+    margin-bottom: 0;
+}
             .mini-card {
-                background: white;
-                border: 1px solid #e9f2ec;
+                background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
+                border: 1px solid #cfe8d8;
                 border-radius: 18px;
-                padding: 16px;
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+                padding: 18px;
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
                 text-align: center;
             }
 
             .mini-card .label {
-                color: #5a6b61;
-                font-size: 0.92rem;
+                color: #4f6b5b;
+                font-size: 0.95rem;
                 margin-bottom: 8px;
             }
 
             .mini-card .value {
                 color: #0f5132;
-                font-size: 1.8rem;
+                font-size: 2rem;
                 font-weight: 800;
                 line-height: 1;
             }
 
-            .card {
-                background: white;
-                border: 1px solid #e9f2ec;
+            .section-card {
+                background: #ffffff;
+                border: 1px solid #d7eadf;
                 border-radius: 18px;
-                padding: 18px 20px;
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-                margin-bottom: 14px;
+                padding: 22px;
+                margin-bottom: 18px;
+                box-shadow: 0 12px 26px rgba(0, 0, 0, 0.06);
             }
 
-            div[data-testid="stTabs"] button[role="tab"] {
-                border-radius: 12px;
-                padding: 10px 16px;
-                margin-right: 8px;
-                border: 1px solid #dfeee4;
-                background: white;
-            }
-
-            div[data-testid="stTabs"] button[aria-selected="true"] {
-                background: #198754 !important;
-                color: white !important;
-                border-color: #198754 !important;
-            }
-
-            div[data-testid="stForm"] {
-                background: white;
-                border-radius: 18px;
-                padding: 14px 14px 6px 14px;
-                border: 1px solid #e9f2ec;
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-            }
-
-            div.stButton > button, div.stDownloadButton > button, div[data-testid="stFormSubmitButton"] > button {
-                border-radius: 12px !important;
-                font-weight: 700 !important;
-                border: none !important;
-                background: #198754 !important;
-                color: white !important;
-            }
-
-            div.stButton > button:hover, div.stDownloadButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-                background: #146c43 !important;
+            .info-bar {
+                background: linear-gradient(90deg, #e8fff0 0%, #f7fff9 100%);
+                border-left: 6px solid #198754;
+                border-top: 1px solid #d2f0db;
+                border-right: 1px solid #d2f0db;
+                border-bottom: 1px solid #d2f0db;
+                color: #14532d;
+                border-radius: 14px;
+                padding: 14px 16px;
+                margin-bottom: 16px;
+                font-size: 14px;
+                box-shadow: 0 6px 16px rgba(25, 135, 84, 0.08);
             }
 
             .section-title {
-                font-size: 1.15rem;
+                font-size: 1.2rem;
                 font-weight: 800;
                 color: #0f5132;
                 margin-bottom: 8px;
             }
 
             .section-text {
-                color: #617267;
-                margin-bottom: 0;
+                color: #5d6f63;
+                margin-bottom: 10px;
+                font-size: 14px;
+            }
+
+            div[data-testid="stTabs"] button[role="tab"] {
+                border-radius: 14px;
+                padding: 11px 18px;
+                margin-right: 8px;
+                border: 1px solid #d8ebe0;
+                background: #ffffff;
+                font-weight: 600;
+                transition: all 0.2s ease;
+            }
+            div[data-testid="stTabs"] button[role="tab"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(25, 135, 84, 0.18);
+}
+            .hero-box {
+    background: linear-gradient(135deg, #0b3d2c 0%, #198754 100%);
+    border-radius: 20px;
+    padding: 20px 24px;
+    color: white;
+    box-shadow: 0 10px 24px rgba(25, 135, 84, 0.16);
+    margin-bottom: 16px;
+}
+
+.hero-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.92;
+    margin-bottom: 0;
+}
+
+            div[data-testid="stTabs"] button[aria-selected="true"] {
+                background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+                color: white !important;
+                border-color: #198754 !important;
+                box-shadow: 0 6px 14px rgba(25, 135, 84, 0.18);
+            }
+
+            div[data-testid="stForm"] {
+                background: #ffffff;
+                border-radius: 18px;
+                padding: 16px 16px 8px 16px;
+                border: 1px solid #dcefe4;
+                box-shadow: 0 10px 22px rgba(0, 0, 0, 0.05);
+            }
+
+            div.stButton > button,
+            div.stDownloadButton > button,
+            div[data-testid="stFormSubmitButton"] > button {
+                border-radius: 12px !important;
+                font-weight: 700 !important;
+                border: none !important;
+                background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+                color: white !important;
+                padding: 0.72rem 1.1rem !important;
+                box-shadow: 0 8px 18px rgba(25, 135, 84, 0.22);
+            }
+
+            div.stButton > button:hover,
+            div.stDownloadButton > button:hover,
+            div[data-testid="stFormSubmitButton"] > button:hover {
+                background: linear-gradient(135deg, #157347 0%, #0f5132 100%) !important;
+                color: white !important;
+                transform: translateY(-1px);
+            }
+
+            div[data-baseweb="input"] > div,
+            div[data-baseweb="select"] > div {
+                border-radius: 12px;
             }
         </style>
         ''',
@@ -137,11 +192,12 @@ def get_connection():
     return sqlite3.connect(DB_NAME, check_same_thread=False)
 
 
+
 def init_db():
     with closing(get_connection()) as conn:
         cursor = conn.cursor()
-        cursor.execute(
-            '''
+
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS moradores (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT NOT NULL,
@@ -163,14 +219,79 @@ def init_db():
                 status_associado TEXT DEFAULT 'Ativo',
                 data_cadastro TEXT NOT NULL
             )
-            '''
-        )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario TEXT UNIQUE,
+                senha TEXT,
+                tipo TEXT,
+                ativo INTEGER DEFAULT 1
+            )
+        """)
+
+        cursor.execute("SELECT COUNT(*) FROM usuarios")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute(
+                "INSERT INTO usuarios (usuario, senha, tipo, ativo) VALUES (?, ?, ?, ?)",
+                ("admin", "1234", "admin", 1)
+            )
+
         conn.commit()
 
+def buscar_usuario_por_login(usuario: str):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, usuario, senha, tipo, ativo FROM usuarios WHERE usuario = ?",
+            (usuario,),
+        )
+        return cursor.fetchone()  
+def criar_usuario(usuario, senha, tipo):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO usuarios (usuario, senha, tipo, ativo) VALUES (?, ?, ?, 1)",
+                (usuario, senha, tipo)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+
+def atualizar_senha(usuario, nova_senha):
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "UPDATE usuarios SET senha = ? WHERE usuario = ?",
+                (nova_senha, usuario)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+def gerar_csv_download(df):
+    return df.to_csv(index=False).encode("utf-8")
+                
 
 def limpar_texto(valor: str) -> str:
     return valor.strip() if valor else ""
 
+init_db()
+if "logado" not in st.session_state:
+    st.session_state["logado"] = False
+
+if "usuario_logado" not in st.session_state:
+    st.session_state["usuario_logado"] = None
+
+if "tipo_usuario" not in st.session_state:
+    st.session_state["tipo_usuario"] = None
 
 def formatar_cpf(cpf: str) -> str:
     numeros = "".join(filter(str.isdigit, cpf or ""))
@@ -273,7 +394,37 @@ def excluir_morador(morador_id: int):
         cursor.execute("DELETE FROM moradores WHERE id = ?", (morador_id,))
         conn.commit()
 
+if not st.session_state["logado"]:
+    aplicar_estilo()
 
+    st.markdown(
+    f"""
+    <div class="info-bar">
+        <b>Usuário logado:</b> {st.session_state["usuario_logado"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Perfil:</b> {st.session_state["tipo_usuario"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+    with st.form("form_login"):
+        usuario_login = st.text_input("Usuário")
+        senha_login = st.text_input("Senha", type="password")
+        entrar = st.form_submit_button("Entrar")
+
+        if entrar:
+            usuario_db = buscar_usuario_por_login(usuario_login)
+
+            if usuario_db and usuario_db[4] == 1 and senha_login == usuario_db[2]:
+                st.session_state["logado"] = True
+                st.session_state["usuario_logado"] = usuario_db[1]
+                st.session_state["tipo_usuario"] = usuario_db[3]
+                st.success("Login realizado com sucesso.")
+                st.rerun()
+            else:
+                st.error("Usuário ou senha inválidos.")
+
+    st.stop()
 def buscar_moradores(termo: str = "", status: str = "Todos") -> pd.DataFrame:
     with closing(get_connection()) as conn:
         query = "SELECT * FROM moradores WHERE 1=1"
@@ -358,23 +509,60 @@ aplicar_estilo()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 logo_path = os.path.join(BASE_DIR, "logo.jpeg")
 
+topo_esq, topo_dir1, topo_dir2 = st.columns([6, 1.5, 1])
+
+with topo_dir1:
+    if st.session_state["tipo_usuario"] == "admin":
+        if st.button("Criar usuário", key="abrir_criar_usuario"):
+            st.session_state["mostrar_criar_usuario"] = not st.session_state.get("mostrar_criar_usuario", False)
+
+with topo_dir2:
+    if st.button("Sair", key="sair_topo"):
+        st.session_state["logado"] = False
+        st.session_state["usuario_logado"] = None
+        st.session_state["tipo_usuario"] = None
+        st.rerun()
 st.markdown('<div class="hero-box">', unsafe_allow_html=True)
-col_logo, col_texto = st.columns([1, 2])
+
+col_logo, col_texto = st.columns([1, 4])
 
 with col_logo:
     if os.path.exists(logo_path):
-        st.image(logo_path, width=230)
+        st.image(logo_path, width=140)
 
 with col_texto:
-    st.markdown('<div class="hero-title">Sistema de Cadastro - Associação Ecopraça</div>', unsafe_allow_html=True)
-    st.markdown('<p class="hero-subtitle">Cadastro, consulta, edição e relatórios simples dos associados.</p>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">Sistema de Cadastro</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Associação Ecopraça • Gestão de associados, usuários e relatórios</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
-
+st.markdown(
+    f"""
+    <div style="
+        background:#f7faf8;
+        border:1px solid #d9e8de;
+        padding:10px 14px;
+        border-radius:10px;
+        margin-bottom:12px;
+        font-size:14px;
+    ">
+        <b>Usuário logado:</b> {st.session_state["usuario_logado"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Tipo:</b> {st.session_state["tipo_usuario"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 df_geral = buscar_moradores()
 total = len(df_geral)
 ativos = len(df_geral[df_geral["status_associado"] == "Ativo"]) if not df_geral.empty else 0
 inativos = len(df_geral[df_geral["status_associado"] == "Inativo"]) if not df_geral.empty else 0
+
+csv_dados = gerar_csv_download(df_geral)
+
+st.download_button(
+    label="📥 Baixar lista de moradores",
+    data=csv_dados,
+    file_name="moradores.csv",
+    mime="text/csv"
+)
 
 m1, m2, m3 = st.columns(3)
 with m1:
@@ -385,10 +573,10 @@ with m3:
     st.markdown(f'<div class="mini-card"><div class="label">Associados inativos</div><div class="value">{inativos}</div></div>', unsafe_allow_html=True)
 
 st.write("")
-aba1, aba2, aba3 = st.tabs(["Cadastrar / Editar", "Consultar", "Relatórios"])
+aba1, aba2, aba3, aba4 = st.tabs(["Cadastrar / Editar", "Consultar", "Relatórios", "Conta"])
 
 with aba1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Cadastro de morador</div><p class="section-text">Preencha os dados abaixo para cadastrar ou editar um associado.</p>', unsafe_allow_html=True)
 
     editar_id = st.number_input(
@@ -397,6 +585,39 @@ with aba1:
         step=1,
         value=0,
     )
+
+    if "mostrar_criar_usuario" not in st.session_state:
+        st.session_state["mostrar_criar_usuario"] = False
+
+    if st.session_state["tipo_usuario"] == "admin" and st.session_state["mostrar_criar_usuario"]:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.markdown("### 👤 Criar novo usuário")
+
+        novo_usuario = st.text_input("Novo usuário")
+        nova_senha = st.text_input("Senha", type="password")
+        tipo = st.selectbox("Tipo", ["usuario", "admin"])
+
+        col_btn1, col_btn2 = st.columns([1, 1])
+
+        with col_btn1:
+            if st.button("Salvar novo usuário", key="salvar_novo_usuario"):
+                if novo_usuario and nova_senha:
+                    sucesso = criar_usuario(novo_usuario, nova_senha, tipo)
+                    if sucesso:
+                        st.success("Usuário criado com sucesso!")
+                        st.session_state["mostrar_criar_usuario"] = False
+                        st.rerun()
+                    else:
+                        st.error("Usuário já existe.")
+                else:
+                    st.warning("Preencha todos os campos.")
+
+        with col_btn2:
+            if st.button("Fechar", key="fechar_criar_usuario"):
+                st.session_state["mostrar_criar_usuario"] = False
+                st.rerun()
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
     dados_existentes = buscar_por_id(int(editar_id)) if editar_id else None
 
@@ -458,8 +679,7 @@ with aba1:
                     "cpf": formatar_cpf(cpf),
                     "telefone": formatar_telefone(telefone),
                     "email": limpar_texto(email),
-                    "nis": limpar_texto(nis),  # NOVO CAMPO                 
-                                  
+                    "nis": limpar_texto(nis),
                     "data_nascimento": limpar_texto(data_nascimento),
                     "endereco": limpar_texto(endereco),
                     "numero": limpar_texto(numero),
@@ -470,7 +690,7 @@ with aba1:
                     "cep": limpar_texto(cep),
                     "observacoes": limpar_texto(observacoes),
                     "status_associado": status_associado,
-                    "participa_outra_associacao": outra_associacao, # NOVO CAMPO
+                    "participa_outra_associacao": outra_associacao,
                     "data_cadastro": datetime.now().strftime("%d/%m/%Y %H:%M"),
                 }
 
@@ -487,43 +707,48 @@ with aba1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Excluir cadastro</div><p class="section-text">Use essa opção com cuidado para remover um registro pelo ID.</p>', unsafe_allow_html=True)
 
-    excluir_id = st.number_input("ID para excluir", min_value=0, step=1, value=0, key="excluir_id")
-    if st.button("Excluir registro"):
-        if excluir_id > 0:
-            excluir_morador(int(excluir_id))
-            st.warning(f"Registro ID {int(excluir_id)} excluído.")
-        else:
-            st.info("Informe um ID válido para excluir.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    excluir_id = st.number_input("ID para excluir", min_value=0, step=1)
 
-with aba2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Consulta de moradores</div><p class="section-text">Pesquise por nome, CPF, identidade, telefone ou endereço.</p>', unsafe_allow_html=True)
-
-    colf1, colf2 = st.columns([2, 1])
-    with colf1:
-        termo = st.text_input("Buscar por nome, CPF, RG, telefone ou endereço")
-    with colf2:
-        filtro_status = st.selectbox("Filtrar por status", ["Todos", "Ativo", "Inativo"])
-
-    df_consulta = buscar_moradores(termo=termo, status=filtro_status)
-
-    st.metric("Total encontrado", len(df_consulta))
-
-    if not df_consulta.empty:
-        st.dataframe(df_consulta, use_container_width=True, hide_index=True)
-        st.download_button(
-            label="Baixar consulta em CSV",
-            data=exportar_csv(df_consulta),
-            file_name="moradores_filtrados.csv",
-            mime="text/csv",
-        )
+    if st.session_state["tipo_usuario"] == "admin":
+        if st.button("Excluir cadastro"):
+            if excluir_id > 0:
+                excluir_morador(int(excluir_id))
+                st.success("Cadastro excluído com sucesso.")
+                st.rerun()
+            else:
+                st.warning("Informe um ID válido para excluir.")
     else:
-        st.info("Nenhum morador encontrado.")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.info("Somente administradores podem excluir cadastros.")
 
+    st.markdown('</div>', unsafe_allow_html=True)
 with aba3:
     st.markdown('<div class="card">', unsafe_allow_html=True)
+with aba4:
+    st.markdown("### 🔐 Alterar senha")
+
+    usuario_logado = st.session_state["usuario_logado"]
+
+    senha_atual = st.text_input("Senha atual", type="password")
+    nova_senha = st.text_input("Nova senha", type="password")
+    confirmar_senha = st.text_input("Confirmar nova senha", type="password")
+
+    if st.button("Atualizar senha"):
+        usuario_db = buscar_usuario_por_login(usuario_logado)
+
+        if usuario_db:
+            senha_correta = usuario_db[2]
+
+            if senha_atual != senha_correta:
+                st.error("Senha atual incorreta.")
+            elif nova_senha != confirmar_senha:
+                st.warning("As senhas não coincidem.")
+            elif not nova_senha:
+                st.warning("Informe a nova senha.")
+            else:
+                atualizar_senha(usuario_logado, nova_senha)
+                st.success("Senha atualizada com sucesso!")
+        else:
+            st.error("Usuário não encontrado.")    
     st.markdown('<div class="section-title">Relatórios</div><p class="section-text">Visualize os cadastros gerais e exporte os dados da associação.</p>', unsafe_allow_html=True)
 
     df_relatorio = buscar_moradores()
