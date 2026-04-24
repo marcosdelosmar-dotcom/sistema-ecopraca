@@ -33,7 +33,7 @@ def aplicar_estilo():
 
             /* Container Principal */
             .main .block-container {
-                padding-top: 2rem;
+                padding-top: 0,3rem !important;
                 max-width: 1100px;
             }
 
@@ -42,8 +42,8 @@ def aplicar_estilo():
                 background: #ffffff;
                 border: 1px solid #e2e8f0;
                 border-radius: 16px;
-                padding: 2rem;
-                margin-bottom: 2rem;
+                padding: 1.4rem 1.8rem;
+                margin-bottom: 1.4rem;
                 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             }
 
@@ -459,39 +459,40 @@ def gerar_relatorio_html(df: pd.DataFrame, titulo: str = "Relatório de Moradore
     '''
     return html
 
-
-# Interface
 init_db()
 aplicar_estilo()
 
+import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 logo_path = os.path.join(BASE_DIR, "logo.jpeg")
 
-topo_esq, topo_dir1, topo_dir2 = st.columns([6, 1.5, 1])
+# Cabeçalho principal
 
-with topo_dir1:
+st.markdown('<div class="hero-box">', unsafe_allow_html=True)
+
+col_logo, col_texto, col_btn1, col_btn2 = st.columns([1, 4, 1.2, 0.8])
+
+with col_logo:
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=120)
+
+with col_texto:
+    st.markdown('<div class="hero-title">Ecopraça Gestão Comunitária</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Cadastro, acompanhamento e relatórios da associação</div>', unsafe_allow_html=True)
+
+with col_btn1:
     if st.session_state["tipo_usuario"] == "admin":
         if st.button("Criar usuário", key="abrir_criar_usuario"):
             st.session_state["mostrar_criar_usuario"] = not st.session_state.get("mostrar_criar_usuario", False)
 
-with topo_dir2:
+with col_btn2:
     if st.button("Sair", key="sair_topo"):
         st.session_state["logado"] = False
         st.session_state["usuario_logado"] = None
         st.session_state["tipo_usuario"] = None
         st.rerun()
-st.markdown('<div class="hero-box">', unsafe_allow_html=True)
 
-col_logo, col_texto = st.columns([1, 4])
-
-with col_logo:
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=140)
-
-with col_texto:
-    st.markdown('<div class="hero-title">Sistema de Cadastro</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-subtitle">Associação Ecopraça • Gestão de associados, usuários e relatórios</div>', unsafe_allow_html=True)
-
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown(
     f"""
     <div style="
