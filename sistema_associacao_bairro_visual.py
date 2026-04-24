@@ -524,11 +524,35 @@ st.download_button(
 
 m1, m2, m3 = st.columns(3)
 with m1:
-    st.markdown(f'<div class="mini-card"><div class="label">Total de cadastros</div><div class="value">{total}</div></div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class='mini-card'>
+        <div class='label'>👥 Total de Cadastros</div>
+        <div class='value'>{total}</div>
+        <small style='color:#64748b'>
+        Base geral de usuários
+        </small>
+    </div>
+    """, unsafe_allow_html=True)
 with m2:
-    st.markdown(f'<div class="mini-card"><div class="label">Associados ativos</div><div class="value">{ativos}</div></div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class='mini-card'>
+        <div class='label'>✅ Associados Ativos</div>
+        <div class='value'>{ativos}</div>
+        <small style='color:#64748b'>
+        Cadastros em situação regular
+        </small>
+    </div>
+    """, unsafe_allow_html=True)
 with m3:
-    st.markdown(f'<div class="mini-card"><div class="label">Associados inativos</div><div class="value">{inativos}</div></div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class='mini-card'>
+        <div class='label'>⚠ Associados Inativos</div>
+        <div class='value'>{inativos}</div>
+        <small style='color:#64748b'>
+        Requerem acompanhamento
+        </small>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.write("")
 aba1, aba2, aba3, aba4 = st.tabs(["Cadastrar / Editar", "Consultar", "Relatórios", "Conta"])
