@@ -19,175 +19,133 @@ def aplicar_estilo():
     st.markdown(
         '''
         <style>
-            .stApp {
-                background: linear-gradient(180deg, #dff6e8 0%, #f8fffb 45%, #ffffff 100%);
+            /* Importando fonte Inter (Padrão SaaS) */
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+            html, body, [class*="css"] {
+                font-family: 'Inter', sans-serif;
             }
 
+            /* Fundo da App - Cinza ultra claro para reduzir fadiga visual */
+            .stApp {
+                background-color: #f8fafc;
+            }
+
+            /* Container Principal */
             .main .block-container {
-    padding-top: 1rem;
-    padding-bottom: 1.5rem;
-    max-width: 980px;
-}
+                padding-top: 2rem;
+                max-width: 1100px;
+            }
 
+            /* Header/Hero Box Estilo Moderno */
             .hero-box {
-    background: linear-gradient(135deg, #0b3d2c 0%, #198754 100%);
-    border-radius: 20px;
-    padding: 20px 24px;
-    color: white;
-    box-shadow: 0 10px 24px rgba(25, 135, 84, 0.16);
-    margin-bottom: 16px;
-}
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
 
-.hero-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    margin-bottom: 4px;
-    line-height: 1.1;
-}
+            .hero-title {
+                color: #0f172a;
+                font-size: 2rem;
+                font-weight: 800;
+                letter-spacing: -0.025em;
+            }
 
-.hero-subtitle {
-    font-size: 0.95rem;
-    opacity: 0.92;
-    margin-bottom: 0;
-}
+            .hero-subtitle {
+                color: #64748b;
+                font-size: 1rem;
+                margin-top: 0.5rem;
+            }
+
+            /* Cards de Métricas (Dashboard) */
             .mini-card {
-                background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
-                border: 1px solid #cfe8d8;
-                border-radius: 18px;
-                padding: 18px;
-                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
-                text-align: center;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 1.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .mini-card:hover {
+                border-color: #10b981;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                transform: translateY(-2px);
             }
 
             .mini-card .label {
-                color: #4f6b5b;
-                font-size: 0.95rem;
-                margin-bottom: 8px;
+                color: #64748b;
+                font-size: 0.875rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
             }
 
             .mini-card .value {
-                color: #0f5132;
-                font-size: 2rem;
-                font-weight: 800;
-                line-height: 1;
+                color: #0f172a;
+                font-size: 1.875rem;
+                font-weight: 700;
+                margin-top: 0.5rem;
             }
 
-            .section-card {
-                background: #ffffff;
-                border: 1px solid #d7eadf;
-                border-radius: 18px;
-                padding: 22px;
-                margin-bottom: 18px;
-                box-shadow: 0 12px 26px rgba(0, 0, 0, 0.06);
-            }
-
-            .info-bar {
-                background: linear-gradient(90deg, #e8fff0 0%, #f7fff9 100%);
-                border-left: 6px solid #198754;
-                border-top: 1px solid #d2f0db;
-                border-right: 1px solid #d2f0db;
-                border-bottom: 1px solid #d2f0db;
-                color: #14532d;
-                border-radius: 14px;
-                padding: 14px 16px;
-                margin-bottom: 16px;
-                font-size: 14px;
-                box-shadow: 0 6px 16px rgba(25, 135, 84, 0.08);
-            }
-
-            .section-title {
-                font-size: 1.2rem;
-                font-weight: 800;
-                color: #0f5132;
-                margin-bottom: 8px;
-            }
-
-            .section-text {
-                color: #5d6f63;
-                margin-bottom: 10px;
-                font-size: 14px;
-            }
-
-            div[data-testid="stTabs"] button[role="tab"] {
-                border-radius: 14px;
-                padding: 11px 18px;
-                margin-right: 8px;
-                border: 1px solid #d8ebe0;
-                background: #ffffff;
-                font-weight: 600;
-                transition: all 0.2s ease;
-            }
-            div[data-testid="stTabs"] button[role="tab"]:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(25, 135, 84, 0.18);
-}
-            .hero-box {
-    background: linear-gradient(135deg, #0b3d2c 0%, #198754 100%);
-    border-radius: 20px;
-    padding: 20px 24px;
-    color: white;
-    box-shadow: 0 10px 24px rgba(25, 135, 84, 0.16);
-    margin-bottom: 16px;
-}
-
-.hero-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    margin-bottom: 4px;
-    line-height: 1.1;
-}
-
-.hero-subtitle {
-    font-size: 0.95rem;
-    opacity: 0.92;
-    margin-bottom: 0;
-}
-
-            div[data-testid="stTabs"] button[aria-selected="true"] {
-                background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+            /* Botões Profissionais */
+            div.stButton > button, 
+            div.stFormSubmitButton > button {
+                background-color: #0f172a !important; /* Dark Mode Style */
                 color: white !important;
-                border-color: #198754 !important;
-                box-shadow: 0 6px 14px rgba(25, 135, 84, 0.18);
-            }
-
-            div[data-testid="stForm"] {
-                background: #ffffff;
-                border-radius: 18px;
-                padding: 16px 16px 8px 16px;
-                border: 1px solid #dcefe4;
-                box-shadow: 0 10px 22px rgba(0, 0, 0, 0.05);
-            }
-
-            div.stButton > button,
-            div.stDownloadButton > button,
-            div[data-testid="stFormSubmitButton"] > button {
-                border-radius: 12px !important;
-                font-weight: 700 !important;
+                border-radius: 8px !important;
+                padding: 0.5rem 1.5rem !important;
+                font-weight: 600 !important;
                 border: none !important;
-                background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
-                color: white !important;
-                padding: 0.72rem 1.1rem !important;
-                box-shadow: 0 8px 18px rgba(25, 135, 84, 0.22);
+                width: 100%;
+                transition: all 0.2s;
             }
 
-            div.stButton > button:hover,
-            div.stDownloadButton > button:hover,
-            div[data-testid="stFormSubmitButton"] > button:hover {
-                background: linear-gradient(135deg, #157347 0%, #0f5132 100%) !important;
-                color: white !important;
-                transform: translateY(-1px);
+            div.stButton > button:hover {
+                background-color: #1e293b !important;
+                transform: scale(1.02);
             }
 
-            div[data-baseweb="input"] > div,
-            div[data-baseweb="select"] > div {
+            /* Inputs e Selects */
+            div[data-baseweb="input"], div[data-baseweb="select"] {
+                border-radius: 8px !important;
+                background-color: white !important;
+            }
+
+            /* Tabelas e Dataframes */
+            .stDataFrame {
+                border: 1px solid #e2e8f0;
                 border-radius: 12px;
+                overflow: hidden;
+            }
+
+            /* Tabs Estilizadas */
+            button[data-baseweb="tab"] {
+                font-weight: 600 !important;
+                color: #64748b !important;
+            }
+
+            button[aria-selected="true"] {
+                color: #10b981 !important;
+                border-bottom-color: #10b981 !important;
+            }
+            
+            /* Login Box Especial */
+            .login-container {
+                max-width: 400px;
+                margin: 100px auto;
+                padding: 2rem;
+                background: white;
+                border-radius: 16px;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             }
         </style>
         ''',
         unsafe_allow_html=True
     )
-
-
 def get_connection():
     return sqlite3.connect(DB_NAME, check_same_thread=False)
 
