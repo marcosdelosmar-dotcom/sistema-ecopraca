@@ -16,136 +16,164 @@ st.set_page_config(
 )
 
 def aplicar_estilo():
-    st.markdown(
-        '''
-        <style>
-            /* Importando fonte Inter (Padrão SaaS) */
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    st.markdown('''
+    <style>
+        /* PRODUTO SAAS PREMIUM - CSS CORE */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-            html, body, [class*="css"] {
-                font-family: 'Inter', sans-serif;
-            }
+        /* 1. RESET E ESTRUTURA GLOBAL */
+        :root {
+            --primary: #10b981; /* Emerald 500 */
+            --primary-dark: #059669;
+            --zinc-50: #f8fafc;
+            --zinc-100: #f1f5f9;
+            --zinc-200: #e2e8f0;
+            --zinc-500: #64748b;
+            --zinc-800: #1e293b;
+            --zinc-950: #0f172a;
+        }
 
-            /* Fundo da App - Cinza ultra claro para reduzir fadiga visual */
-            .stApp {
-                background-color: #f8fafc;
-            }
+        .stApp {
+            background-color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
 
-            /* Container Principal */
-            .main .block-container {
-                padding-top: 0,3rem !important;
-                max-width: 1100px;
-            }
+        /* Remove o padding padrão do Streamlit e a barra de decoração superior */
+        [data-testid="stHeader"] { background: rgba(0,0,0,0); height: 0px; }
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 2rem !important;
+            max-width: 1200px !important;
+        }
 
-            /* Header/Hero Box Estilo Moderno */
-            .hero-box {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 16px;
-                padding: 1.4rem 1.8rem;
-                margin-bottom: 1.4rem;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            }
+        /* 2. TOP BAR PREMIUM */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--zinc-100);
+            margin-bottom: 2rem;
+        }
+        
+        .brand-section { display: flex; align-items: center; gap: 12px; }
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--zinc-950);
+            letter-spacing: -0.02em;
+        }
+        .brand-subtitle {
+            font-size: 0.875rem;
+            color: var(--zinc-500);
+            border-left: 1px solid var(--zinc-200);
+            padding-left: 12px;
+            margin-left: 4px;
+        }
 
-            .hero-title {
-                color: #0f172a;
-                font-size: 2rem;
-                font-weight: 800;
-                letter-spacing: -0.025em;
-            }
+        /* 3. DASHBOARD CARDS (ESTILO VERCEL/LINEAR) */
+        .metric-card {
+            background: white;
+            border: 1px solid var(--zinc-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card:hover {
+            border-color: var(--zinc-800);
+            box-shadow: 0 12px 20px -10px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
 
-            .hero-subtitle {
-                color: #64748b;
-                font-size: 1rem;
-                margin-top: 0.5rem;
-            }
+        .metric-label {
+            color: var(--zinc-500);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-            /* Cards de Métricas (Dashboard) */
-            .mini-card {
-                background: white;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 1.5rem;
-                transition: all 0.3s ease;
-            }
+        .metric-value {
+            color: var(--zinc-950);
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-top: 8px;
+        }
 
-            .mini-card:hover {
-                border-color: #10b981;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                transform: translateY(-2px);
-            }
+        /* Badge de Status */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: var(--zinc-100);
+            color: var(--zinc-500);
+        }
+        .badge-success { background: #dcfce7; color: #15803d; }
 
-            .mini-card .label {
-                color: #64748b;
-                font-size: 0.875rem;
-                font-weight: 500;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
+        /* 4. TABS NAVEGAÇÃO PRO */
+        button[data-baseweb="tab"] {
+            border: none !important;
+            background: transparent !important;
+            color: var(--zinc-500) !important;
+            font-weight: 500 !important;
+            padding: 8px 16px !important;
+            transition: all 0.2s !important;
+        }
+        
+        button[aria-selected="true"] {
+            color: var(--zinc-950) !important;
+            background: var(--zinc-100) !important;
+            border-radius: 8px !important;
+        }
 
-            .mini-card .value {
-                color: #0f172a;
-                font-size: 1.875rem;
-                font-weight: 700;
-                margin-top: 0.5rem;
-            }
+        /* 5. FORMS E BOTÕES EXECUTIVOS */
+        div[data-baseweb="input"] {
+            border-radius: 8px !important;
+            border: 1px solid var(--zinc-200) !important;
+            transition: all 0.2s;
+        }
+        div[data-baseweb="input"]:focus-within {
+            border-color: var(--zinc-950) !important;
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1) !important;
+        }
 
-            /* Botões Profissionais */
-            div.stButton > button, 
-            div.stFormSubmitButton > button {
-                background-color: #0f172a !important; /* Dark Mode Style */
-                color: white !important;
-                border-radius: 8px !important;
-                padding: 0.5rem 1.5rem !important;
-                font-weight: 600 !important;
-                border: none !important;
-                width: 100%;
-                transition: all 0.2s;
-            }
+        div.stButton > button {
+            background: var(--zinc-950) !important;
+            color: white !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 0.5rem 1.25rem !important;
+            border: 1px solid var(--zinc-950) !important;
+            transition: all 0.15s;
+        }
+        
+        div.stButton > button:hover {
+            background: #27272a !important;
+            transform: translateY(-1px);
+        }
 
-            div.stButton > button:hover {
-                background-color: #1e293b !important;
-                transform: scale(1.02);
-            }
+        /* Botão Secundário (Sair) */
+        div[data-testid="stVerticalBlock"] > div:last-child div.stButton > button {
+            background: white !important;
+            color: var(--zinc-950) !important;
+            border: 1px solid var(--zinc-200) !important;
+        }
 
-            /* Inputs e Selects */
-            div[data-baseweb="input"], div[data-baseweb="select"] {
-                border-radius: 8px !important;
-                background-color: white !important;
-            }
-
-            /* Tabelas e Dataframes */
-            .stDataFrame {
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                overflow: hidden;
-            }
-
-            /* Tabs Estilizadas */
-            button[data-baseweb="tab"] {
-                font-weight: 600 !important;
-                color: #64748b !important;
-            }
-
-            button[aria-selected="true"] {
-                color: #10b981 !important;
-                border-bottom-color: #10b981 !important;
-            }
-            
-            /* Login Box Especial */
-            .login-container {
-                max-width: 400px;
-                margin: 100px auto;
-                padding: 2rem;
-                background: white;
-                border-radius: 16px;
-                border: 1px solid #e2e8f0;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            }
-        </style>
-        ''',
-        unsafe_allow_html=True
-    )
+        /* 6. TABELAS (ESTILO STRIPE) */
+        .stDataFrame {
+            border: 1px solid var(--zinc-200);
+            border-radius: 12px;
+        }
+    </style>
+    ''', unsafe_allow_html=True)
+        
+    
 def get_connection():
     return sqlite3.connect(DB_NAME, check_same_thread=False)
 
@@ -466,7 +494,6 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 logo_path = os.path.join(BASE_DIR, "logo.jpeg")
 
-# Cabeçalho principal
 
 st.markdown('<div class="hero-box">', unsafe_allow_html=True)
 
@@ -612,6 +639,7 @@ with aba1:
             identidade = st.text_input("Identidade (RG)", value=dados_existentes["identidade"] if dados_existentes else "")
             cpf = st.text_input("CPF", value=dados_existentes["cpf"] if dados_existentes else "")
             nis = st.text_input("NIS")
+            titulo_de_eleitor = st.text_input("Título de Eleitor")
             outra_associacao = st.radio(
                 "Participa de outra associação?",
                 ["Não", "Sim"],
