@@ -1,5 +1,7 @@
 import os
 import sqlite3
+import re
+import requests
 from contextlib import closing
 from datetime import datetime
 from io import BytesIO
@@ -190,6 +192,7 @@ def init_db():
                 identidade TEXT,
                 cpf TEXT,
                 nis TEXT,
+                titulo_de_eleitor TEXT,
                 telefone TEXT,
                 email TEXT,
                 data_nascimento TEXT,
@@ -203,7 +206,9 @@ def init_db():
                 observacoes TEXT,
                 participa_outra_associacao TEXT,
                 status_associado TEXT DEFAULT 'Ativo',
-                data_cadastro TEXT NOT NULL
+                data_cadastro TEXT NOT NULL,
+                ultima_atualizacao TEXT,
+                editado_por TEXT
             )
         """)
 
@@ -279,11 +284,63 @@ if "usuario_logado" not in st.session_state:
 if "tipo_usuario" not in st.session_state:
     st.session_state["tipo_usuario"] = None
 
-def formatar_cpf(cpf: str) -> str:
+def formatar_cpf(cpf):
     numeros = "".join(filter(str.isdigit, cpf or ""))
     if len(numeros) == 11:
         return f"{numeros[:3]}.{numeros[3:6]}.{numeros[6:9]}-{numeros[9:]}"
     return cpf
+
+def limpar_numeros(valor: str) -> str:
+    """Retorna apenas os dígitos de uma string."""
+    return "".join(filter(str.isdigit, str(valor or "")))
+
+def validar_cpf(cpf: str) -> bool:
+    """Valida o cálculo dos dígitos verificadores do CPF."""
+    cpf = limpar_numeros(cpf)
+    if len(cpf) != 11 or cpf == cpf[0] * 11: return False
+    for i in range(9, 11):
+        soma = sum(int(cpf[num]) * ((i + 1) - num) for num in range(i))
+        digito = (soma * 10 % 11) % 10
+        if digito != int(cpf[i]): return False
+    return True
+
+def validar_email(email: str) -> bool:
+    """Validação simples de formato de e-mail."""
+    regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    return re.search(regex, email.lower()) is not None if email else True
+
+def validar_data(data_str: str) -> bool:
+    """Verifica se a data é válida e segue o padrão dd/mm/aaaa."""
+    try:
+        datetime.strptime(data_str, "%d/%m/%Y")
+        return True
+    except ValueError:
+        return False
+
+def validar_titulo_eleitor(titulo: str) -> bool:
+    """Valida se o título tem entre 10 e 12 dígitos (padrão brasileiro)."""
+    t = limpar_numeros(titulo)
+    return 10 <= len(t) <= 12 if t else True
+
+def consultar_cep(cep: str):
+    """Consulta API ViaCEP. Retorna dict com dados ou None."""
+    cep_limpo = limpar_numeros(cep)
+    if len(cep_limpo) != 8: return None
+    try:
+        response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=3)
+        if response.status_code == 200:
+            dados = response.json()
+            return dados if "erro" not in dados else None
+    except:
+        return None
+    return None
+
+def buscar_morador_por_cpf(cpf: str):
+    """Verifica se o CPF já existe no banco para evitar duplicidade."""
+    with closing(get_connection()) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nome FROM moradores WHERE cpf = ?", (cpf,))
+        return cursor.fetchone()
 
 
 def formatar_telefone(telefone: str) -> str:
@@ -312,16 +369,17 @@ def inserir_morador(dados: dict):
         cursor.execute(
             '''
             INSERT INTO moradores (
-                nome, identidade, cpf, nis, telefone, email, data_nascimento,
+                nome, identidade, cpf, nis, titulo_de_eleitor, telefone, email, data_nascimento,
                 endereco, numero, complemento, bairro, cidade, estado, cep,
-                observacoes, participa_outra_associacao, status_associado, data_cadastro
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                observacoes, participa_outra_associacao, status_associado, data_cadastro, ultima_atualizacao,editad_por 
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''',
             (
                 dados["nome"],
                 dados["identidade"],
                 dados["cpf"],
                 dados["nis"],
+                dados["titulo_de_eleitor"],
                 dados["telefone"],
                 dados["email"],
                 dados["data_nascimento"],
@@ -336,6 +394,8 @@ def inserir_morador(dados: dict):
                 dados["participa_outra_associacao"],
                 dados["status_associado"],
                 dados["data_cadastro"],
+                dados["ultima_atualizacao"],
+                dados["editado_por"]
             ),
         )
         conn.commit()
@@ -347,15 +407,17 @@ def atualizar_morador(morador_id: int, dados: dict):
         cursor.execute(
             '''
             UPDATE moradores SET
-                nome = ?, identidade = ?, cpf = ?, telefone = ?, email = ?, data_nascimento = ?,
+                nome = ?, identidade = ?, cpf = ?, nis = ?, titulo_de_eleitor = ?, telefone = ?, email = ?, data_nascimento = ?,
                 endereco = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ?,
-                observacoes = ?, status_associado = ?
+                observacoes = ?, participa_de_outra_associacao = ?, status_associado = ?, ultima_atualizacao = ?, editado_por = ?,
             WHERE id = ?
             ''',
             (
                 dados["nome"],
                 dados["identidade"],
                 dados["cpf"],
+                dados["nis"],
+                dados["titulo_de_eleitor"],
                 dados["telefone"],
                 dados["email"],
                 dados["data_nascimento"],
@@ -367,8 +429,11 @@ def atualizar_morador(morador_id: int, dados: dict):
                 dados["estado"],
                 dados["cep"],
                 dados["observacoes"],
+                dados["participa_de_outra_associacao"],
                 dados["status_associado"],
-                morador_id,
+                dados["ultima_atualizacao"],
+                dados["editado_por"],
+                morador_id
             ),
         )
         conn.commit()
@@ -543,42 +608,33 @@ inativos = len(df_geral[df_geral["status_associado"] == "Inativo"]) if not df_ge
 
 csv_dados = gerar_csv_download(df_geral)
 
-st.download_button(
-    label="📥 Baixar lista de moradores",
-    data=csv_dados,
-    file_name="moradores.csv",
-    mime="text/csv"
-)
 
 m1, m2, m3 = st.columns(3)
 with m1:
     st.markdown(f"""
-    <div class='mini-card'>
-        <div class='label'>👥 Total de Cadastros</div>
-        <div class='value'>{total}</div>
-        <small style='color:#64748b'>
-        Base geral de usuários
-        </small>
+    <div class='metric-card'>
+    <div class='metric-icon'>👥</div>
+    <div class='metric-label'>Total de Cadastros</div>
+    <div class='metric-value'>{total}</div>
+    <div class='metric-help'>Base geral de usuários</div>
     </div>
     """, unsafe_allow_html=True)
 with m2:
     st.markdown(f"""
-    <div class='mini-card'>
-        <div class='label'>✅ Associados Ativos</div>
-        <div class='value'>{ativos}</div>
-        <small style='color:#64748b'>
-        Cadastros em situação regular
-        </small>
+    <div class='metric-card'>
+    <div class='metric-icon'>✅</div>
+    <div class='metric-label'>Associados Ativos</div>
+    <div class='metric-value'>{ativos}</div>
+    <div class='metric-help'>Cadastros em situação regular</div>
     </div>
     """, unsafe_allow_html=True)
 with m3:
     st.markdown(f"""
-    <div class='mini-card'>
-        <div class='label'>⚠ Associados Inativos</div>
-        <div class='value'>{inativos}</div>
-        <small style='color:#64748b'>
-        Requerem acompanhamento
-        </small>
+    <div class='metric-card'>
+    <div class='metric-icon'>⚠️</div>
+    <div class='metric-label'>Associados Inativos</div>
+    <div class='metric-value'>{inativos}</div>
+    <div class='metric-help'>Requerem acompanhamento</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -637,9 +693,23 @@ with aba1:
         with col1:
             nome = st.text_input("Nome completo *", value=dados_existentes["nome"] if dados_existentes else "")
             identidade = st.text_input("Identidade (RG)", value=dados_existentes["identidade"] if dados_existentes else "")
-            cpf = st.text_input("CPF", value=dados_existentes["cpf"] if dados_existentes else "")
-            nis = st.text_input("NIS")
-            titulo_de_eleitor = st.text_input("Título de Eleitor")
+            cpf_input = st.text_input(
+                "CPF",
+                value=dados_existentes["cpf"] if dados_existentes else "",
+                placeholder="00000000000"
+            )
+
+            cpf = formatar_cpf(cpf_input) if cpf_input else ""
+            if cpf:
+                st.caption(f"CPF formatado: {formatar_cpf(cpf)}")
+            nis = st.text_input("NIS",
+                value=dados_existentes["nis"] if dados_existentes else ""
+            )
+
+            titulo_de_eleitor = st.text_input(
+                "Título de Eleitor",
+                value=dados_existentes["titulo_de_eleitor"] if dados_existentes else ""
+            )
             outra_associacao = st.radio(
                 "Participa de outra associação?",
                 ["Não", "Sim"],
@@ -691,6 +761,7 @@ with aba1:
                     "telefone": formatar_telefone(telefone),
                     "email": limpar_texto(email),
                     "nis": limpar_texto(nis),
+                    "titulo_de_eleitor": limpar_texto(titulo_de_eleitor),
                     "data_nascimento": limpar_texto(data_nascimento),
                     "endereco": limpar_texto(endereco),
                     "numero": limpar_texto(numero),
@@ -703,6 +774,8 @@ with aba1:
                     "status_associado": status_associado,
                     "participa_outra_associacao": outra_associacao,
                     "data_cadastro": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "ultima_atualizacao":datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "editado_por": "Admin",
                 }
 
                 if dados_existentes:
@@ -732,8 +805,64 @@ with aba1:
         st.info("Somente administradores podem excluir cadastros.")
 
     st.markdown('</div>', unsafe_allow_html=True)
-with aba3:
+with aba2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-title">Consulta de moradores</div>'
+        '<p class="section-text">Pesquise por nome, CPF, RG, telefone, endereço ou título de eleitor.</p>',
+        unsafe_allow_html=True
+    )
+
+    termo = st.text_input(
+        "Buscar morador",
+        placeholder="Digite nome, CPF, RG, telefone, endereço ou título de eleitor",
+        key="consulta_termo"
+    )
+
+    df_consulta = buscar_moradores()
+
+    if termo:
+        termo_busca = termo.lower()
+
+        df_consulta = df_consulta[
+            df_consulta.astype(str).apply(
+                lambda linha: linha.str.lower().str.contains(termo_busca, na=False).any(),
+                axis=1
+            )
+        ]
+
+    if df_consulta.empty:
+        st.info("Nenhum morador encontrado.")
+    else:
+        st.dataframe(df_consulta, width="stretch", hide_index=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+with aba3:
+    st.markdown('<div class="section-title">Relatórios</div><p class="section-text">Visualize os cadastros gerais e exporte os dados da associação.</p>', unsafe_allow_html=True)
+
+    df_relatorio = buscar_moradores()
+
+    if df_relatorio.empty:
+        st.info("Ainda não há cadastros para gerar relatório.")
+    else:
+        st.dataframe(df_relatorio, use_container_width=True, hide_index=True)
+        html_relatorio = gerar_relatorio_html(df_relatorio)
+
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button(
+                label="Baixar relatório em HTML",
+                data=html_relatorio.encode("utf-8"),
+                file_name="relatorio_moradores.html",
+                mime="text/html",
+            )
+            st.download_button(
+                label="Baixar relatório em CSV",
+                data=exportar_csv(df_relatorio),
+                file_name="relatorio_moradores.csv",
+                mime="text/csv",
+            )
+    st.markdown('</div>', unsafe_allow_html=True)
 with aba4:
     st.markdown("### 🔐 Alterar senha")
 
@@ -760,28 +889,4 @@ with aba4:
                 st.success("Senha atualizada com sucesso!")
         else:
             st.error("Usuário não encontrado.")    
-    st.markdown('<div class="section-title">Relatórios</div><p class="section-text">Visualize os cadastros gerais e exporte os dados da associação.</p>', unsafe_allow_html=True)
-
-    df_relatorio = buscar_moradores()
-
-    if df_relatorio.empty:
-        st.info("Ainda não há cadastros para gerar relatório.")
-    else:
-        st.dataframe(df_relatorio, use_container_width=True, hide_index=True)
-        html_relatorio = gerar_relatorio_html(df_relatorio)
-
-        d1, d2 = st.columns(2)
-        with d1:
-            st.download_button(
-                label="Baixar relatório em HTML",
-                data=html_relatorio.encode("utf-8"),
-                file_name="relatorio_moradores.html",
-                mime="text/html",
-            )
-            st.download_button(
-                label="Baixar relatório em CSV",
-                data=exportar_csv(df_relatorio),
-                file_name="relatorio_moradores.csv",
-                mime="text/csv",
-            )
-    st.markdown('</div>', unsafe_allow_html=True)
+    
